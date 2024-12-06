@@ -82,17 +82,45 @@ app.get("/last-location", (req, res) => {
   }
 });
 
-app.get("/last-qr", (req, res) => {
-  if (lastQrData) {
-    res.json({ success: true, data: lastQrData });
-  } else {
-    res.status(404).json({ success: false, message: "No QR data available." });
-  }
+app.get('/last-qr', (req, res) => {
+    if (lastQrData) {
+        res.json({ success: true, data: lastQrData });
+    } else {
+        // Send dummy data with null values when no QR data is available
+        res.json({
+            success: true,
+            data: {
+                department: "John Doe Dept",
+                item_name: "Jane Doe",
+                batch_number: 12369,
+                expiry_date: 123241412,
+                quantity: 5,
+                unit_price: 10,
+                supplier: "John Doe",
+                category: "Jane Doe"
+            }
+        });
+    }
 
-  // Emit the last QR data to connected clients
-  if (lastQrData) {
-    io.emit("fetchLastQrData", { qrData: lastQrData });
-  }
+    // Emit the last QR data to connected clients
+    if (lastQrData) {
+        io.emit('fetchLastQrData', { qrData: lastQrData });
+    } else {
+        // Emit dummy data to connected clients when no QR data is available
+        io.emit('fetchLastQrData', { qrData: {
+            success: true,
+            data: {
+                department: "John Doe Dept",
+                item_name: "Jane Doe",
+                batch_number: 1269,
+                expiry_date: 123241412,
+                quantity: 5,
+                unit_price: 10,
+                supplier: "John Doe",
+                category: "Jane Doe"
+            }
+        } });
+    }
 });
 
 // Endpoint to update QR data
