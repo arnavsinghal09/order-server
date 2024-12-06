@@ -82,6 +82,19 @@ app.get("/last-location", (req, res) => {
   }
 });
 
+app.get("/last-qr", (req, res) => {
+  if (lastQrData) {
+    res.json({ success: true, data: lastQrData });
+  } else {
+    res.status(404).json({ success: false, message: "No QR data available." });
+  }
+
+  // Emit the last QR data to connected clients
+  if (lastQrData) {
+    io.emit("fetchLastQrData", { qrData: lastQrData });
+  }
+});
+
 // Endpoint to update QR data
 app.post("/update-qr", (req, res) => {
   const { qrData } = req.body;
