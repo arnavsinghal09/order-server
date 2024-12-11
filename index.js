@@ -237,14 +237,17 @@ const createTransaction = async (qrData) => {
   try {
     const { batchId, name, manufacturer, manufacturingDate, expiryDate } =
       qrData;
-
+    const manufacturingTimestamp = Math.floor(
+      new Date(manufacturingDate).getTime() / 1000
+    );
+    const expiryTimestamp = Math.floor(new Date(expiryDate).getTime() / 1000);
     console.log(
       "Received from qrData:",
       batchId,
       name,
       manufacturer,
-      manufacturingDate,
-      expiryDate
+      manufacturingTimestamp,
+      expiryTimestamp
     );
 
     // Add medicine details to the blockchain
@@ -252,13 +255,17 @@ const createTransaction = async (qrData) => {
       batchId,
       name,
       manufacturer,
-      manufacturingDate,
-      expiryDate
+      manufacturingTimestamp,
+      expiryTimestamp
     );
+
     console.log("hmmmm");
+
     await tx.wait();
+
     console.log("aayen");
     console.log("Transaction successful with hash:", tx.hash);
+    
   } catch (err) {
     console.log("chud gye guru");
     console.error("Error in createTransaction:", err.message || err);
