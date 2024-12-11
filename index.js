@@ -98,7 +98,6 @@ app.post("/update-qr", async (req, res) => {
       qrData = JSON.parse(qrData);
     } catch (err) {
       return res.status(400).json({ error: "Invalid QR data format." });
-
     }
   }
 
@@ -110,7 +109,7 @@ app.post("/update-qr", async (req, res) => {
     !qrData.manufacturingDate ||
     !qrData.expiryDate
   ) {
-    return;
+    return res.status(400).json({ error: "Incomplete or invalid QR data." });
   }
 
   if (!qrData) {
@@ -120,6 +119,7 @@ app.post("/update-qr", async (req, res) => {
   try {
     lastQrData = qrData;
     io.emit("qrDataUpdate", { qrData });
+    
     await createTransaction(qrData);
 
     return res.status(200).json({ success: true, data: qrData });
