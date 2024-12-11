@@ -210,9 +210,9 @@ const createTransaction = async (qrData) => {
   console.log("ghus gye func mai");
 
   // Ensure qrData is parsed as JSON
-  if (typeof qrData === "string") {
+  if (typeof qrData.qrData === "string") {
     try {
-      qrData = JSON.parse(qrData);
+      qrData = JSON.parse(qrData.qrData);
       console.log("Parsed qrData JSON:", qrData);
     } catch (err) {
       console.error("Error parsing qrData JSON:", err.message);
