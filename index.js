@@ -97,6 +97,7 @@ app.get("/last-location", (req, res) => {
   // Emit the last location to connected clients
   if (lastLocation) {
     io.emit("fetchLastLocation", lastLocation);
+    return res.status(200).json(lastLocation);
   }
 });
 
@@ -123,84 +124,7 @@ app.post("/update-qr", async (req, res) => {
 // Endpoint to get the last QR data
 app.get("/last-qr", (req, res) => {
   if (lastQrData) {
-    res.json({ success: true, data: lastQrData });
-  } else {
-    // Send dummy data with null values when no QR data is available
-    res.json({
-      success: true,
-      data: {
-        batchId: "DUMMY_BATCH_ID",
-        name: "DUMMY_PRODUCT_NAME",
-        manufacturer: "DUMMY_MANUFACTURER",
-        manufacturingDate: "2024-01-01T00:00:00.000Z", // Example ISO format
-        expiryDate: "2025-01-01T00:00:00.000Z", // Example ISO format
-        contractAddress: "0xDUMMY_CONTRACT_ADDRESS",
-        journeySteps: [
-          {
-            stepId: "1",
-            location: "DUMMY_LOCATION_1",
-            description: "DUMMY_DESCRIPTION_1",
-            timestamp: "2024-01-02T12:00:00.000Z",
-          },
-          {
-            stepId: "2",
-            location: "DUMMY_LOCATION_2",
-            description: "DUMMY_DESCRIPTION_2",
-            timestamp: "2024-01-03T15:30:00.000Z",
-          },
-        ],
-        department: "DUMMY_DEPARTMENT",
-        item_name: "DUMMY_ITEM_NAME",
-        batch_number: "DUMMY_BATCH_NUMBER",
-        expiry_date: "2023-12-31", // Example expiry date
-        quantity: 999,
-        unit_price: 99.99,
-        supplier: "DUMMY_SUPPLIER",
-        category: "DUMMY_CATEGORY",
-      },
-    });
-  }
-
-  // Emit the last QR data to connected clients
-  if (lastQrData) {
-    io.emit("fetchLastQrData", { qrData: lastQrData });
-  } else {
-    // Emit dummy data to connected clients when no QR data is available
-    io.emit("fetchLastQrData", {
-      qrData: {
-        success: true,
-        data: {
-          batchId: "DUMMY_BATCH_ID",
-          name: "DUMMY_PRODUCT_NAME",
-          manufacturer: "DUMMY_MANUFACTURER",
-          manufacturingDate: "2024-01-01T00:00:00.000Z", // Example ISO format
-          expiryDate: "2025-01-01T00:00:00.000Z", // Example ISO format
-          contractAddress: "0xDUMMY_CONTRACT_ADDRESS",
-          journeySteps: [
-            {
-              stepId: "1",
-              location: "DUMMY_LOCATION_1",
-              description: "DUMMY_DESCRIPTION_1",
-              timestamp: "2024-01-02T12:00:00.000Z",
-            },
-            {
-              stepId: "2",
-              location: "DUMMY_LOCATION_2",
-              description: "DUMMY_DESCRIPTION_2",
-              timestamp: "2024-01-03T15:30:00.000Z",
-            },
-          ],
-          department: "DUMMY_DEPARTMENT",
-          item_name: "DUMMY_ITEM_NAME",
-          batch_number: "DUMMY_BATCH_NUMBER",
-          expiry_date: "2023-12-31", // Example expiry date
-          quantity: 999,
-          unit_price: 99.99,
-          supplier: "DUMMY_SUPPLIER",
-          category: "DUMMY_CATEGORY",
-        },
-      },
-    });
+    res.json(lastQrData);
   }
 });
 
@@ -226,7 +150,6 @@ const createTransaction = async (qrData) => {
     !qrData.manufacturingDate ||
     !qrData.expiryDate
   ) {
-
     return;
   }
 
@@ -258,7 +181,6 @@ const createTransaction = async (qrData) => {
     await tx.wait();
 
     console.log("Transaction successful with hash:", tx.hash);
-
   } catch (err) {
     console.error("Error in createTransaction:", err.message || err);
   }
