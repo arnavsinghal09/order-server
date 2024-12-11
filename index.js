@@ -111,16 +111,16 @@ app.post("/update-qr", async (req, res) => {
 
 app.get("/last-qr", (req, res) => {
   if (lastQrData) {
-    // First, parse the qrData string
+    // Extract the qrData string
     const qrDataString = lastQrData.qrData;
 
     // Comprehensive regex to clean and format the JSON string
     const cleanedQrData = qrDataString
       .replace(/\s*([,:])\s*/g, "$1") // Remove spaces around colons and commas
       .replace(
-        /(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):\d{2}\.000Z/g,
-        "$1T$2:$3:00.000Z"
-      ) // Standardize timestamp format
+        /(\d{4})[-/](\d{2})[-/](\d{2})[T\s](\d{2}):(\d{2}):(\d{2})(?:\.\d+|)(?:Z|)/g,
+        "$1-$2-$3T$4:$5:$6.000Z"
+      ) // Standardize various timestamp formats to "YYYY-MM-DDThh:mm:ss.000Z"
       .replace(/(\w+):/g, '"$1":') // Add quotes around keys
       .replace(/,(\s*)}/g, "}"); // Remove trailing commas
 
@@ -140,6 +140,8 @@ app.get("/last-qr", (req, res) => {
   }
   return res.status(404).json({ error: "No QR data available." });
 });
+
+
 
 // Blockchain Transaction Creation
 const createTransaction = async (qrData) => {
