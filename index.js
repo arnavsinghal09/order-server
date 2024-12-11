@@ -122,10 +122,10 @@ app.post("/update-qr", async (req, res) => {
     io.emit("qrDataUpdate", { qrData });
     await createTransaction(qrData);
 
-    res.status(200).json({ success: true, data: qrData });
+    return res.status(200).json({ success: true, data: qrData });
   } catch (error) {
     console.error("Error in /update-qr:", error.message || error);
-    res.status(500).json({ error: "Failed to process QR data." });
+    return res.status(500).json({ error: "Failed to process QR data." });
   }
 });
 
@@ -135,7 +135,6 @@ app.get("/last-qr", (req, res) => {
   }
   return res.status(404).json({ error: "No QR data available." });
 });
-
 
 const createTransaction = async (qrData) => {
   try {
