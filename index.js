@@ -208,11 +208,12 @@ app.get("/last-qr", (req, res) => {
 const createTransaction = async (qrData) => {
   // Validate that qrData exists and contains the required fields
   console.log("ghus gye func mai");
-  
+
   // Ensure qrData is parsed as JSON
   if (typeof qrData === "string") {
     try {
       qrData = JSON.parse(qrData);
+      console.log("Parsed qrData JSON:", qrData);
     } catch (err) {
       console.error("Error parsing qrData JSON:", err.message);
       return;
@@ -227,6 +228,7 @@ const createTransaction = async (qrData) => {
     !qrData.manufacturingDate ||
     !qrData.expiryDate
   ) {
+    console.log("qrData JSON field check:", qrData);
     console.log("Error: Missing required fields in qrData JSON.");
     return;
   }
