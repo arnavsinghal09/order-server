@@ -111,7 +111,63 @@ app.post("/update-qr", async (req, res) => {
 
 app.get("/last-qr", (req, res) => {
   if (lastQrData) {
-    return res.status(200).json(lastQrData);
+    // Create a copy of the lastQrData to avoid modifying the original object
+    const formattedData = JSON.parse(JSON.stringify(lastQrData));
+
+    // Convert dates to en-GB locale strings
+    if (formattedData.manufacturingDate) {
+      formattedData.manufacturingDate = new Date(
+        formattedData.manufacturingDate
+      ).toLocaleString("en-GB", {
+        timeZone: "UTC",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      });
+    }
+
+    if (formattedData.expiryDate) {
+      formattedData.expiryDate = new Date(
+        formattedData.expiryDate
+      ).toLocaleString("en-GB", {
+        timeZone: "UTC",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      });
+    }
+
+    // Convert timestamps in journeySteps
+    if (
+      formattedData.journeySteps &&
+      Array.isArray(formattedData.journeySteps)
+    ) {
+      formattedData.journeySteps = formattedData.journeySteps.map((step) => {
+        if (step.timestamp) {
+          step.timestamp = new Date(step.timestamp).toLocaleString("en-GB", {
+            timeZone: "UTC",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false,
+          });
+        }
+        return step;
+      });
+    }
+
+    return res.status(200).json(formattedData);
   }
   return res.status(404).json({ error: "No QR data available." });
 });
