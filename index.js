@@ -118,31 +118,13 @@ app.get("/last-qr", (req, res) => {
     if (formattedData.manufacturingDate) {
       formattedData.manufacturingDate = new Date(
         formattedData.manufacturingDate
-      ).toLocaleString("en-GB", {
-        timeZone: "UTC",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      });
+      ).toLocaleString("en-GB");
     }
 
     if (formattedData.expiryDate) {
       formattedData.expiryDate = new Date(
         formattedData.expiryDate
-      ).toLocaleString("en-GB", {
-        timeZone: "UTC",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      });
+      ).toLocaleString("en-GB");
     }
 
     // Convert timestamps in journeySteps
