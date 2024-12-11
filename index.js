@@ -28,34 +28,29 @@ const server = http.createServer(app);
 
 const io = socketIo(server, {
   cors: {
-    origin: "*", // Allow requests from any origin
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });
 
-// Use CORS middleware
 app.use(
   cors({
-    origin: "*", // Allows requests from any origin
+    origin: "*",
   })
 );
 
-// Parse JSON and URL-encoded data
 app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, "public")));
 
 let lastLocation = null;
 let lastQrData = null;
 
-// Endpoint to update location
 app.post("/update-location", (req, res) => {
   console.log("Received location update:", typeof req.body, req.body);
 
-  // Parse the locations from the string
   let locations;
   try {
     locations = JSON.parse(req.body.locations);
@@ -64,13 +59,11 @@ app.post("/update-location", (req, res) => {
     return res.status(400).json({ error: "Invalid location data format." });
   }
 
-  // Validate required fields
   if (!locations || !Array.isArray(locations) || locations.length === 0) {
     console.error("No valid location data provided.");
     return res.status(400).json({ error: "No valid location data provided." });
   }
 
-  // Extract the last location from the array
   const { latitude, longitude, accuracy, speed, timestamp } =
     locations[locations.length - 1];
 
@@ -81,50 +74,46 @@ app.post("/update-location", (req, res) => {
       .json({ error: "Latitude and longitude are required." });
   }
 
-  // Store the last location
   lastLocation = { latitude, longitude, accuracy, speed, timestamp };
 
-  // Emit location update to clients
   io.emit("locationUpdate", lastLocation);
 
-  // Send a response indicating success
   return res
     .status(200)
     .json({ success: true, message: "Location updated successfully." });
 });
 
-// Endpoint to get the last location
 app.get("/last-location", (req, res) => {
-  // Emit the last location to connected clients
   if (lastLocation) {
     io.emit("fetchLastLocation", lastLocation);
     return res.status(200).json(lastLocation);
   }
 });
 
-// Endpoint to update QR data
 app.post("/update-qr", async (req, res) => {
   const qrData = req.body;
+
   if (!qrData) {
     return res.status(400).json({ error: "QR data is required." });
   }
 
-  // Store the QR data
-  lastQrData = qrData;
+  try {
+    lastQrData = qrData;
+    io.emit("qrDataUpdate", { qrData });
+    await createTransaction(qrData);
 
-  console.log("Received QR code data:", qrData);
-
-  // Emit the QR data to connected clients
-  io.emit("qrDataUpdate", { qrData });
-
-  // Pass qrData directly to the createTransaction function
-  await createTransaction(qrData);
-  return res.status(200).json({ success: true, data: qrData });
+    res.status(200).json({ success: true, data: qrData });
+  } catch (error) {
+    console.error("Error in /update-qr:", error.message || error);
+    res.status(500).json({ error: "Failed to process QR data." });
+  }
 });
 
-// Endpoint to get the last QR data
 app.get("/last-qr", (req, res) => {
-  return res.json(lastQrData);
+  if (lastQrData) {
+    return res.status(200).json(lastQrData);
+  }
+  return res.status(404).json({ error: "No QR data available." });
 });
 
 // Blockchain Transaction Creation
