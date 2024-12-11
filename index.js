@@ -208,8 +208,8 @@ app.get("/last-qr", (req, res) => {
 const createTransaction = async (qrData) => {
   // Validate that qrData exists and contains the required fields
   console.log("ghus gye func mai");
-  
-  let qrData = inputData.qrData;
+
+  qrData = inputData.qrData;
 
   // Ensure qrData is parsed as JSON
   if (typeof qrData === "string") {
