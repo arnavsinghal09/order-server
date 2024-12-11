@@ -97,8 +97,8 @@ app.post("/update-qr", async (req, res) => {
       console.log("Received QR data:", qrData);
       qrData = JSON.parse(qrData);
     } catch (err) {
-      console.error("Error parsing qrData JSON:", err.message);
-      return;
+      return res.status(400).json({ error: "Invalid QR data format." });
+
     }
   }
 
