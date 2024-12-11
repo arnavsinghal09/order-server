@@ -4,23 +4,6 @@ const socketIo = require("socket.io");
 const path = require("path");
 const cors = require("cors");
 
-//Blockchain
-const { ethers, JsonRpcProvider } = require("ethers");
-// Import contract ABI
-const contractData = require("./MedicineTrackerABI.json");
-const contractABI = contractData.abi;
-
-// Ethereum setup
-const CONTRACT_ADDRESS = "0xA3D7d9b212EB3eBF5fb27fC09aA1B3aa7d013d64";
-const PRIVATE_KEY =
-  "0f4307ef7dee539cfdd566f1c1ebfb82c0a1e1a57523d012b339926d524f5743";
-const RPC_URL = "https://rpc-amoy.polygon.technology";
-
-// Initialize provider and wallet
-const provider = new JsonRpcProvider("https://rpc-amoy.polygon.technology/");
-const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
-const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI, wallet);
-
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -49,7 +32,7 @@ let lastQrData = null;
 
 // Endpoint to update location
 app.post("/update-location", (req, res) => {
-  console.log("Received location update:", typeof req.body, req.body);
+  console.log("Received location update:", req.body);
 
   // Parse the locations from the string
   let locations;
@@ -99,24 +82,6 @@ app.get("/last-location", (req, res) => {
   }
 });
 
-// Endpoint to update QR data
-app.post("/update-qr", (req, res) => {
-  const qrData = req.body;
-  if (!qrData) {
-    return res.status(400).json({ error: "QR data is required." });
-  }
-  createTransaction(qrData);
-  // Store the QR data
-  lastQrData = qrData;
-
-  console.log("Received QR code data:", qrData);
-
-  // Emit the QR data to connected clients
-  io.emit("qrDataUpdate", { qrData });
-
-  res.status(200).json({ success: true, data: qrData });
-});
-// Endpoint to get the last QR data
 app.get("/last-qr", (req, res) => {
   if (lastQrData) {
     res.json({ success: true, data: lastQrData });
@@ -125,34 +90,14 @@ app.get("/last-qr", (req, res) => {
     res.json({
       success: true,
       data: {
-        batchId: "DUMMY_BATCH_ID",
-        name: "DUMMY_PRODUCT_NAME",
-        manufacturer: "DUMMY_MANUFACTURER",
-        manufacturingDate: "2024-01-01T00:00:00.000Z", // Example ISO format
-        expiryDate: "2025-01-01T00:00:00.000Z", // Example ISO format
-        contractAddress: "0xDUMMY_CONTRACT_ADDRESS",
-        journeySteps: [
-          {
-            stepId: "1",
-            location: "DUMMY_LOCATION_1",
-            description: "DUMMY_DESCRIPTION_1",
-            timestamp: "2024-01-02T12:00:00.000Z",
-          },
-          {
-            stepId: "2",
-            location: "DUMMY_LOCATION_2",
-            description: "DUMMY_DESCRIPTION_2",
-            timestamp: "2024-01-03T15:30:00.000Z",
-          },
-        ],
-        department: "DUMMY_DEPARTMENT",
-        item_name: "DUMMY_ITEM_NAME",
-        batch_number: "DUMMY_BATCH_NUMBER",
-        expiry_date: "2023-12-31", // Example expiry date
-        quantity: 999,
-        unit_price: 99.99,
-        supplier: "DUMMY_SUPPLIER",
-        category: "DUMMY_CATEGORY",
+        department: "John Doe Dept",
+        item_name: "Jane Doe",
+        batch_number: 12369,
+        expiry_date: 123241412,
+        quantity: 5,
+        unit_price: 10,
+        supplier: "John Doe",
+        category: "Jane Doe",
       },
     });
   }
@@ -166,38 +111,36 @@ app.get("/last-qr", (req, res) => {
       qrData: {
         success: true,
         data: {
-          batchId: "DUMMY_BATCH_ID",
-          name: "DUMMY_PRODUCT_NAME",
-          manufacturer: "DUMMY_MANUFACTURER",
-          manufacturingDate: "2024-01-01T00:00:00.000Z", // Example ISO format
-          expiryDate: "2025-01-01T00:00:00.000Z", // Example ISO format
-          contractAddress: "0xDUMMY_CONTRACT_ADDRESS",
-          journeySteps: [
-            {
-              stepId: "1",
-              location: "DUMMY_LOCATION_1",
-              description: "DUMMY_DESCRIPTION_1",
-              timestamp: "2024-01-02T12:00:00.000Z",
-            },
-            {
-              stepId: "2",
-              location: "DUMMY_LOCATION_2",
-              description: "DUMMY_DESCRIPTION_2",
-              timestamp: "2024-01-03T15:30:00.000Z",
-            },
-          ],
-          department: "DUMMY_DEPARTMENT",
-          item_name: "DUMMY_ITEM_NAME",
-          batch_number: "DUMMY_BATCH_NUMBER",
-          expiry_date: "2023-12-31", // Example expiry date
-          quantity: 999,
-          unit_price: 99.99,
-          supplier: "DUMMY_SUPPLIER",
-          category: "DUMMY_CATEGORY",
+          department: "John Doe Dept",
+          item_name: "Jane Doe",
+          batch_number: 1269,
+          expiry_date: 123241412,
+          quantity: 5,
+          unit_price: 10,
+          supplier: "John Doe",
+          category: "Jane Doe",
         },
       },
     });
   }
+});
+
+// Endpoint to update QR data
+app.post("/update-qr", (req, res) => {
+  const { qrData } = req.body;
+  if (!qrData) {
+    return res.status(400).json({ error: "QR data is required." });
+  }
+
+  // Store the QR data
+  lastQrData = qrData;
+
+  console.log("Received QR code data:", qrData);
+
+  // Emit the QR data to connected clients
+  io.emit("qrDataUpdate", { qrData });
+
+  res.status(200).json({ success: true, data: qrData });
 });
 
 // Broadcast connection info
@@ -217,60 +160,6 @@ io.on("connection", (socket) => {
     console.log(`Client disconnected: ${socket.id}`);
   });
 });
-
-//Blockchain
-
-const createTransaction = async (req, res) => {
-  const { qrData } = req.body; // Expecting qrData as the input JSON object
-
-  // Validate that qrData exists and contains the required fields
-  if (
-    !qrData ||
-    !qrData.batchId ||
-    !qrData.name ||
-    !qrData.manufacturer ||
-    !qrData.manufacturingDate ||
-    !qrData.expiryDate
-  ) {
-    return res
-      .status(400)
-      .json({ error: "Missing required fields in qrData JSON." });
-  }
-
-  try {
-    const { batchId, name, manufacturer, manufacturingDate, expiryDate } =
-      qrData;
-
-    console.log(
-      "Received from qrData:",
-      batchId,
-      name,
-      manufacturer,
-      manufacturingDate,
-      expiryDate
-    );
-
-    // Add medicine details to the blockchain
-    const tx = await contract.registerMedicine(
-      batchId,
-      name,
-      manufacturer,
-      manufacturingDate,
-      expiryDate
-    );
-    await tx.wait();
-    console.log("Transaction successful with hash:", tx.hash);
-
-    res
-      .status(200)
-      .json({ message: "Transaction successful", transactionHash: tx.hash });
-  } catch (err) {
-    console.error("Error in createTransaction:", err.message || err);
-    res
-      .status(500)
-      .json({ error: err.message || "Error creating transaction" });
-  }
-};
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
