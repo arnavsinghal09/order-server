@@ -92,9 +92,10 @@ app.get("/last-location", (req, res) => {
 
 app.post("/update-qr", async (req, res) => {
   const qrData = req.body;
-  if (typeof qrData.qrData === "string") {
+  if (typeof qrData === "string") {
     try {
-      qrData = JSON.parse(qrData.qrData);
+      console.log("Received QR data:", qrData);
+      qrData = JSON.parse(qrData);
     } catch (err) {
       console.error("Error parsing qrData JSON:", err.message);
       return;
