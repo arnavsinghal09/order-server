@@ -111,37 +111,10 @@ app.post("/update-qr", async (req, res) => {
 
 app.get("/last-qr", (req, res) => {
   if (lastQrData) {
-    // Extract the qrData string
-    const qrDataString = lastQrData.qrData;
-
-    // Comprehensive regex to clean and format the JSON string
-    const cleanedQrData = qrDataString
-      .replace(/\s*([,:])\s*/g, "$1") // Remove spaces around colons and commas
-      .replace(
-        /(\d{4})[-/](\d{2})[-/](\d{2})[T\s](\d{2}):(\d{2}):(\d{2})(?:\.\d+|)(?:Z|)/g,
-        "$1-$2-$3T$4:$5:$6.000Z"
-      ) // Standardize various timestamp formats to "YYYY-MM-DDThh:mm:ss.000Z"
-      .replace(/(\w+):/g, '"$1":') // Add quotes around keys
-      .replace(/,(\s*)}/g, "}"); // Remove trailing commas
-
-    try {
-      // Parse the cleaned JSON string
-      const parsedQrData = JSON.parse(cleanedQrData);
-
-      // Convert the parsed data back to a complete string
-      const transformedQrData = JSON.stringify(parsedQrData);
-
-      // Send the transformed data
-      return res.status(200).json({ qrData: transformedQrData });
-    } catch (error) {
-      console.error("JSON parsing error:", error);
-      return res.status(500).json({ error: "Error processing QR data" });
-    }
+    return res.status(200).json(lastQrData);
   }
   return res.status(404).json({ error: "No QR data available." });
 });
-
-
 
 // Blockchain Transaction Creation
 const createTransaction = async (qrData) => {
