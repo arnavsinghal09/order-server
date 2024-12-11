@@ -111,46 +111,32 @@ app.post("/update-qr", async (req, res) => {
 
 app.get("/last-qr", (req, res) => {
   if (lastQrData) {
-    // Create a deep copy of the original data
-    const transformedData = JSON.parse(JSON.stringify(lastQrData));
+    // First, parse the qrData string
+    const qrDataString = lastQrData.qrData;
 
-    // Function to safely convert date
-    const safeConvertDate = (dateString) => {
-      try {
-        return new Date(dateString).toISOString();
-      } catch (error) {
-        console.error("Date conversion error:", error);
-        return dateString;
-      }
-    };
+    // Comprehensive regex to clean and format the JSON string
+    const cleanedQrData = qrDataString
+      .replace(/\s*([,:])\s*/g, "$1") // Remove spaces around colons and commas
+      .replace(
+        /(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):\d{2}\.000Z/g,
+        "$1T$2:$3:00.000Z"
+      ) // Standardize timestamp format
+      .replace(/(\w+):/g, '"$1":') // Add quotes around keys
+      .replace(/,(\s*)}/g, "}"); // Remove trailing commas
 
-    // Convert specific date fields
-    if (transformedData.manufacturingDate) {
-      transformedData.manufacturingDate = safeConvertDate(
-        transformedData.manufacturingDate
-      );
+    try {
+      // Parse the cleaned JSON string
+      const parsedQrData = JSON.parse(cleanedQrData);
+
+      // Convert the parsed data back to a complete string
+      const transformedQrData = JSON.stringify(parsedQrData);
+
+      // Send the transformed data
+      return res.status(200).json({ qrData: transformedQrData });
+    } catch (error) {
+      console.error("JSON parsing error:", error);
+      return res.status(500).json({ error: "Error processing QR data" });
     }
-
-    if (transformedData.expiryDate) {
-      transformedData.expiryDate = safeConvertDate(transformedData.expiryDate);
-    }
-
-    // Convert timestamps in journeySteps
-    if (
-      transformedData.journeySteps &&
-      Array.isArray(transformedData.journeySteps)
-    ) {
-      transformedData.journeySteps = transformedData.journeySteps.map(
-        (step) => {
-          if (step.timestamp) {
-            step.timestamp = safeConvertDate(step.timestamp);
-          }
-          return step;
-        }
-      );
-    }
-
-    return res.status(200).json(transformedData);
   }
   return res.status(404).json({ error: "No QR data available." });
 });
