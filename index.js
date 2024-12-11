@@ -23,7 +23,9 @@ const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
 const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI, wallet);
 
 const app = express();
+
 const server = http.createServer(app);
+
 const io = socketIo(server, {
   cors: {
     origin: "*", // Allow requests from any origin
@@ -40,6 +42,7 @@ app.use(
 
 // Parse JSON and URL-encoded data
 app.use(express.json());
+
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static files from the "public" directory
@@ -85,15 +88,13 @@ app.post("/update-location", (req, res) => {
   io.emit("locationUpdate", lastLocation);
 
   // Send a response indicating success
-  res
+  return res
     .status(200)
     .json({ success: true, message: "Location updated successfully." });
 });
 
 // Endpoint to get the last location
 app.get("/last-location", (req, res) => {
-  res.json(lastLocation);
-
   // Emit the last location to connected clients
   if (lastLocation) {
     io.emit("fetchLastLocation", lastLocation);
@@ -118,14 +119,12 @@ app.post("/update-qr", async (req, res) => {
 
   // Pass qrData directly to the createTransaction function
   await createTransaction(qrData);
-  res.status(200).json({ success: true, data: qrData });
+  return res.status(200).json({ success: true, data: qrData });
 });
 
 // Endpoint to get the last QR data
 app.get("/last-qr", (req, res) => {
-  if (lastQrData) {
-    res.json(lastQrData);
-  }
+  return res.json(lastQrData);
 });
 
 // Blockchain Transaction Creation
