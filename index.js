@@ -100,8 +100,8 @@ app.get("/last-location", (req, res) => {
   }
 });
 
-// Endpoint to update QR data and create a blockchain transaction
-app.post("/update-qr", (req, res) => {
+// Endpoint to update QR data
+app.post("/update-qr", async (req, res) => {
   const qrData = req.body;
   if (!qrData) {
     return res.status(400).json({ error: "QR data is required." });
@@ -109,13 +109,99 @@ app.post("/update-qr", (req, res) => {
 
   // Store the QR data
   lastQrData = qrData;
-  createTransaction(qrData);
+
   console.log("Received QR code data:", qrData);
 
-  return res.status(200).json({ success: true, data: qrData });
+  // Emit the QR data to connected clients
+  io.emit("qrDataUpdate", { qrData });
 
   // Pass qrData directly to the createTransaction function
+  await createTransaction(qrData);
+  res.status(200).json({ success: true, data: qrData });
+});
 
+// Endpoint to get the last QR data
+app.get("/last-qr", (req, res) => {
+  if (lastQrData) {
+    res.json({ success: true, data: lastQrData });
+  } else {
+    // Send dummy data with null values when no QR data is available
+    res.json({
+      success: true,
+      data: {
+        batchId: "DUMMY_BATCH_ID",
+        name: "DUMMY_PRODUCT_NAME",
+        manufacturer: "DUMMY_MANUFACTURER",
+        manufacturingDate: "2024-01-01T00:00:00.000Z", // Example ISO format
+        expiryDate: "2025-01-01T00:00:00.000Z", // Example ISO format
+        contractAddress: "0xDUMMY_CONTRACT_ADDRESS",
+        journeySteps: [
+          {
+            stepId: "1",
+            location: "DUMMY_LOCATION_1",
+            description: "DUMMY_DESCRIPTION_1",
+            timestamp: "2024-01-02T12:00:00.000Z",
+          },
+          {
+            stepId: "2",
+            location: "DUMMY_LOCATION_2",
+            description: "DUMMY_DESCRIPTION_2",
+            timestamp: "2024-01-03T15:30:00.000Z",
+          },
+        ],
+        department: "DUMMY_DEPARTMENT",
+        item_name: "DUMMY_ITEM_NAME",
+        batch_number: "DUMMY_BATCH_NUMBER",
+        expiry_date: "2023-12-31", // Example expiry date
+        quantity: 999,
+        unit_price: 99.99,
+        supplier: "DUMMY_SUPPLIER",
+        category: "DUMMY_CATEGORY",
+      },
+    });
+  }
+
+  // Emit the last QR data to connected clients
+  if (lastQrData) {
+    io.emit("fetchLastQrData", { qrData: lastQrData });
+  } else {
+    // Emit dummy data to connected clients when no QR data is available
+    io.emit("fetchLastQrData", {
+      qrData: {
+        success: true,
+        data: {
+          batchId: "DUMMY_BATCH_ID",
+          name: "DUMMY_PRODUCT_NAME",
+          manufacturer: "DUMMY_MANUFACTURER",
+          manufacturingDate: "2024-01-01T00:00:00.000Z", // Example ISO format
+          expiryDate: "2025-01-01T00:00:00.000Z", // Example ISO format
+          contractAddress: "0xDUMMY_CONTRACT_ADDRESS",
+          journeySteps: [
+            {
+              stepId: "1",
+              location: "DUMMY_LOCATION_1",
+              description: "DUMMY_DESCRIPTION_1",
+              timestamp: "2024-01-02T12:00:00.000Z",
+            },
+            {
+              stepId: "2",
+              location: "DUMMY_LOCATION_2",
+              description: "DUMMY_DESCRIPTION_2",
+              timestamp: "2024-01-03T15:30:00.000Z",
+            },
+          ],
+          department: "DUMMY_DEPARTMENT",
+          item_name: "DUMMY_ITEM_NAME",
+          batch_number: "DUMMY_BATCH_NUMBER",
+          expiry_date: "2023-12-31", // Example expiry date
+          quantity: 999,
+          unit_price: 99.99,
+          supplier: "DUMMY_SUPPLIER",
+          category: "DUMMY_CATEGORY",
+        },
+      },
+    });
+  }
 });
 
 // Blockchain Transaction Creation
