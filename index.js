@@ -207,6 +207,8 @@ app.get("/last-qr", (req, res) => {
 // Blockchain Transaction Creation
 const createTransaction = async (qrData) => {
   // Validate that qrData exists and contains the required fields
+  console.log("ghus gye func mai");
+
   if (
     !qrData ||
     !qrData.batchId ||
@@ -217,7 +219,8 @@ const createTransaction = async (qrData) => {
   ) {
     console.log("Error: Missing required fields in qrData JSON.");
     return;
-  }
+  } 
+  console.log("Data mil gya lfg");
 
   try {
     const { batchId, name, manufacturer, manufacturingDate, expiryDate } =
@@ -240,11 +243,15 @@ const createTransaction = async (qrData) => {
       manufacturingDate,
       expiryDate
     );
+    console.log("hmmmm");
     await tx.wait();
+    console.log("aayen");
     console.log("Transaction successful with hash:", tx.hash);
   } catch (err) {
+    console.log("chud gye guru");
     console.error("Error in createTransaction:", err.message || err);
   }
+  console.log("ez done");
 };
 
 // Broadcast connection info
