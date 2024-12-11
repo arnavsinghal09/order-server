@@ -208,7 +208,8 @@ app.get("/last-qr", (req, res) => {
 const createTransaction = async (qrData) => {
   // Validate that qrData exists and contains the required fields
   console.log("ghus gye func mai");
-
+  qrData = qrData.parseJSON(qrData);
+  console.log("QR data:", qrData);
   if (
     !qrData ||
     !qrData.batchId ||
@@ -219,8 +220,8 @@ const createTransaction = async (qrData) => {
   ) {
     console.log("Error: Missing required fields in qrData JSON.");
     return;
-  } 
-  console.log("Data mil gya lfg");
+  }
+  console.log("Data mil gya lffg");
 
   try {
     const { batchId, name, manufacturer, manufacturingDate, expiryDate } =
