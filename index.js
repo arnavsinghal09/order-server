@@ -92,6 +92,25 @@ app.get("/last-location", (req, res) => {
 
 app.post("/update-qr", async (req, res) => {
   const qrData = req.body;
+  if (typeof qrData.qrData === "string") {
+    try {
+      qrData = JSON.parse(qrData.qrData);
+    } catch (err) {
+      console.error("Error parsing qrData JSON:", err.message);
+      return;
+    }
+  }
+
+  if (
+    !qrData ||
+    !qrData.batchId ||
+    !qrData.name ||
+    !qrData.manufacturer ||
+    !qrData.manufacturingDate ||
+    !qrData.expiryDate
+  ) {
+    return;
+  }
 
   if (!qrData) {
     return res.status(400).json({ error: "QR data is required." });
@@ -116,31 +135,8 @@ app.get("/last-qr", (req, res) => {
   return res.status(404).json({ error: "No QR data available." });
 });
 
-// Blockchain Transaction Creation
+
 const createTransaction = async (qrData) => {
-  // Validate that qrData exists and contains the required fields
-
-  // Ensure qrData is parsed as JSON
-  if (typeof qrData.qrData === "string") {
-    try {
-      qrData = JSON.parse(qrData.qrData);
-    } catch (err) {
-      console.error("Error parsing qrData JSON:", err.message);
-      return;
-    }
-  }
-
-  if (
-    !qrData ||
-    !qrData.batchId ||
-    !qrData.name ||
-    !qrData.manufacturer ||
-    !qrData.manufacturingDate ||
-    !qrData.expiryDate
-  ) {
-    return;
-  }
-
   try {
     const { batchId, name, manufacturer, manufacturingDate, expiryDate } =
       qrData;
