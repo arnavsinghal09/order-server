@@ -208,8 +208,8 @@ app.get("/last-qr", (req, res) => {
 const createTransaction = async (qrData) => {
   // Validate that qrData exists and contains the required fields
   console.log("ghus gye func mai");
-  qrData = qrData.parseJSON(qrData);
-  console.log("QR data:", qrData);
+  qrData = JSON.parse(qrData);
+
   if (
     !qrData ||
     !qrData.batchId ||
