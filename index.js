@@ -9,6 +9,7 @@ const { ethers } = require("ethers");
 const { JsonRpcProvider } = require("ethers");
 // Import contract ABI
 const contractData = require("./MedicineTrackerABI.json");
+const { ConversationContextImpl } = require("twilio/lib/rest/conversations/v1/conversation");
 const contractABI = contractData.abi;
 
 // Ethereum setup
@@ -161,8 +162,9 @@ const createTransaction = async (qrData) => {
       manufacturingTimestamp,
       expiryTimestamp
     );
-
+    console.log("before await");
     await tx.wait();
+    console.log("past  await");
 
     console.log("Transaction successful with hash:", tx.hash);
   } catch (err) {
